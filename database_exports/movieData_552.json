@@ -1,0 +1,121 @@
+[{
+  "_id": {
+    "$oid": "6a4d3106a1dc82595142701a"
+  },
+  "id": 2,
+  "title": "Dark",
+  "type": "Series",
+  "genre": "Mystery",
+  "releaseYear": 2017,
+  "language": "German",
+  "posterUrl": "https://placehold.co/300x450?text=Dark",
+  "description": "A mystery series about time travel, secrets, and connected families.",
+  "platform": "Netflix",
+  "averageRating": 4.7
+},
+{
+  "_id": {
+    "$oid": "6a4d32cba1dc82595142701b"
+  },
+  "id": 3,
+  "title": "Stranger Things",
+  "type": "Series",
+  "genre": "Sci-Fi Horror",
+  "releaseYear": 2016,
+  "language": "English",
+  "posterUrl": "https://placehold.co/300x450?text=Stranger+Things",
+  "description": "A group of friends face supernatural events in their town.",
+  "platform": "Netflix",
+  "averageRating": 4.6
+},
+{
+  "_id": {
+    "$oid": "6a4d32cba1dc82595142701c"
+  },
+  "id": 4,
+  "title": "Interstellar",
+  "type": "Movie",
+  "genre": "Sci-Fi",
+  "releaseYear": 2014,
+  "language": "English",
+  "posterUrl": "https://placehold.co/300x450?text=Interstellar",
+  "description": "A space exploration story about survival, love, and time.",
+  "platform": "Prime Video",
+  "averageRating": 4.9
+},
+{
+  "_id": {
+    "$oid": "6a4d32cba1dc82595142701d"
+  },
+  "id": 5,
+  "title": "Money Heist",
+  "type": "Series",
+  "genre": "Crime Thriller",
+  "releaseYear": 2017,
+  "language": "Spanish",
+  "posterUrl": "https://placehold.co/300x450?text=Money+Heist",
+  "description": "A criminal mastermind leads a group through a major heist.",
+  "platform": "Netflix",
+  "averageRating": 4.5
+},
+{
+  "_id": {
+    "$oid": "6a4d32cba1dc82595142701e"
+  },
+  "id": 6,
+  "title": "Game of Thrones",
+  "type": "Series",
+  "genre": "Fantasy Drama",
+  "releaseYear": 2011,
+  "language": "Valyrian",
+  "posterUrl": "https://placehold.co/300x450?text=Game+Of+Thrones",
+  "description": "Game of Thrones is a medieval fantasy television series following noble families in the fictional continents of Westeros and Essos.",
+  "platform": "HBO Max",
+  "averageRating": 4.9
+},
+{
+  "_id": {
+    "$oid": "6a4d4315a1dc82595142701f"
+  },
+  "id": 7,
+  "title": "From",
+  "type": "Series",
+  "genre": "Mystery Thriller",
+  "releaseYear": 2022,
+  "language": "English",
+  "posterUrl": "https://placehold.co/300x450?text=From",
+  "description": "\"From\" is a science fiction and supernatural horror television series that unravels the mystery of a nightmarish town that traps anyone who enters.",
+  "platform": "Amazon Prime",
+  "averageRating": 4.7
+},
+{
+  "_id": {
+    "$oid": "6a4d46f417cb051f6741c60a"
+  },
+  "id": 1,
+  "title": "Inception",
+  "type": "Movie",
+  "genre": "Sci-Fi",
+  "releaseYear": 2010,
+  "language": "English",
+  "posterUrl": "https://placehold.co/300x450?text=Inception",
+  "description": "A skilled thief enters dreams to steal secrets and gets a final chance to change his life.",
+  "platform": "Netflix",
+  "averageRating": 4.8,
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a5088eba7be4e0d241b3388"
+  },
+  "id": 8,
+  "title": "Family man",
+  "type": "Series",
+  "genre": "Crime",
+  "releaseYear": 2020,
+  "language": "Hindi",
+  "posterUrl": "https://placehold.co/300x450?text=Family+man",
+  "description": "Family man is ........................",
+  "platform": "Amazon Prime",
+  "averageRating": 4.6
+}]

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signup | MovieVerse</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <%- include("partials/navbar") %>
+
+  <main class="container narrow">
+    <h1>Create Account</h1>
+
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+
+    <form class="form" action="/signup" method="POST">
+      <input type="text" name="name" placeholder="Name" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button class="btn" type="submit">Sign Up</button>
+    </form>
+
+    <p class="muted">Already have an account? <a class="text-link" href="/login">Login</a></p>
+  </main>
+</body>
+</html>

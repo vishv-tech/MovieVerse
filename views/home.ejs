@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MovieVerse</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <%- include("partials/navbar") %>
+
+  <main class="container hero">
+    <p class="eyebrow">Movies, series, reviews, and watchlists</p>
+    <h1>MovieVerse</h1>
+    <p class="hero-text">
+      Discover movies and series, save titles to your watchlist, and share your own ratings and reviews.
+    </p>
+
+    <div class="hero-actions">
+      <% if (currentUser) { %>
+        <a class="btn" href="/movies">Go to Movies</a>
+      <% } else { %>
+        <a class="btn" href="/login">Login</a>
+        <a class="btn secondary-btn" href="/signup">Sign Up</a>
+      <% } %>
+    </div>
+  </main>
+</body>
+</html>

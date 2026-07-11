@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= content.title %> | MovieVerse</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <%- include("partials/navbar") %>
+
+  <main class="container detail-layout">
+    <img class="detail-poster" src="<%= content.posterUrl %>" alt="<%= content.title %> poster">
+
+    <section>
+      <span class="pill"><%= content.type %></span>
+      <h1><%= content.title %></h1>
+      <p class="muted">
+        <%= content.genre %> | <%= content.releaseYear %> | <%= content.language %> |
+        <%= content.platform %> | Average Rating: <%= content.averageRating %>/5
+      </p>
+      <p><%= content.description %></p>
+
+      <form action="/movies/<%= content.id %>/watchlist" method="POST">
+        <button class="btn" type="submit" <%= isSaved ? "disabled" : "" %>>
+          <%= isSaved ? "Saved to Watchlist" : "Add to Watchlist" %>
+        </button>
+      </form>
+
+      <h2>Reviews</h2>
+      <% if (contentReviews.length === 0) { %>
+        <p class="muted">No reviews yet.</p>
+      <% } %>
+
+      <% contentReviews.forEach((review) => { %>
+        <div class="review">
+          <div class="review-head">
+            <strong><%= review.userName %></strong>
+            <span><%= review.rating %>/5</span>
+          </div>
+          <p><%= review.reviewText %></p>
+          <small class="muted"><%= review.createdAt.toLocaleString() %></small>
+        </div>
+      <% }) %>
+
+      <form class="form review-form" action="/movies/<%= content.id %>/reviews" method="POST">
+        <select name="rating" required>
+          <option value="">Select rating</option>
+          <option value="5">5 - Excellent</option>
+          <option value="4">4 - Good</option>
+          <option value="3">3 - Average</option>
+          <option value="2">2 - Poor</option>
+          <option value="1">1 - Bad</option>
+        </select>
+        <textarea name="reviewText" placeholder="Write a review" required></textarea>
+        <button class="btn" type="submit">Add Review</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

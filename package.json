@@ -1,0 +1,19 @@
+{
+  "name": "movieverse",
+  "version": "1.0.0",
+  "description": "Simple Express and EJS movie website with temporary in-memory data.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-session": "^1.19.0",
+    "mongoose": "^9.7.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

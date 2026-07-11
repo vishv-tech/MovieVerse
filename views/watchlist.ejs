@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watchlist | MovieVerse</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <%- include("partials/navbar") %>
+
+  <main class="container">
+    <h1>Your Watchlist</h1>
+
+    <% if (savedItems.length === 0) { %>
+      <p class="muted">Your watchlist is empty.</p>
+    <% } %>
+
+    <div class="movie-grid">
+      <% savedItems.forEach((item) => { %>
+        <div class="movie-card">
+          <img src="<%= item.content.posterUrl %>" alt="<%= item.content.title %> poster">
+          <div class="card-body">
+            <span class="pill"><%= item.content.type %></span>
+            <h2><%= item.content.title %></h2>
+            <p><%= item.content.genre %> | <%= item.content.releaseYear %></p>
+            <p class="muted">Status: <%= item.status %></p>
+            <a class="btn" href="/movies/<%= item.contentId %>">View Details</a>
+            <form action="/watchlist/remove/<%= item.id %>" method="POST">
+              <button class="btn" type="submit">Remove</button>
+            </form>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </main>
+</body>
+</html>

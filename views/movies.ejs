@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movies | MovieVerse</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <%- include("partials/navbar") %>
+
+  <main class="container">
+    <div class="page-head">
+      <div>
+        <h1>Movies & Series</h1>
+        <p class="muted">Browse the MovieVerse catalog.</p>
+      </div>
+    </div>
+
+    <% if (contents.length === 0) { %>
+      <p class="empty-state">No movies or series added yet.</p>
+    <% } %>
+
+    <div class="movie-grid">
+      <% contents.forEach((content) => { %>
+        <div class="movie-card">
+          <img src="<%= content.posterUrl %>" alt="<%= content.title %> poster">
+          <div class="card-body">
+            <span class="pill"><%= content.type %></span>
+            <h2><%= content.title %></h2>
+            <p><%= content.genre %> | <%= content.releaseYear %></p>
+            <p class="muted"><%= content.language %> | <%= content.platform %></p>
+            <span class="rating">Average Rating: <%= content.averageRating %>/5</span>
+            <a class="btn" href="/movies/<%= content.id %>">View Details</a>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </main>
+</body>
+</html>
