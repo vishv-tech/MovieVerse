@@ -25,16 +25,21 @@ app.use((req, res, next) => {
   next();
 });
 
-mongoose
-  .connect("mongodb://127.0.0.1:27017/movie_content_db", {
+/* =====================================================
+   MEMBER 1: MOVIE DATABASE
+
+   Database: movie_content_db
+   Collection: movieData_552
+===================================================== */
+
+const movieConnection = mongoose.createConnection(
+  "mongodb://127.0.0.1:27017/movie_content_db",
+  {
     serverSelectionTimeoutMS: 5000
-  })
-  .then(() => {
-    console.log("Connected to MongoDB movie_content_db");
-  })
-  .catch((error) => {
-    console.error("MongoDB connection error:", error.message);
-  });
+  }
+);
+
+const movieConnectionPromise = movieConnection.asPromise();
 
 const contentSchema = new mongoose.Schema(
   {
@@ -55,20 +60,79 @@ const contentSchema = new mongoose.Schema(
   }
 );
 
-const Content = mongoose.model("Content", contentSchema);
+const Content = movieConnection.model("Content", contentSchema);
 
-// Temporary local user data. Do not connect this to MongoDB yet.
-let users = [];
+/* =====================================================
+   MEMBER 2: LOGIN DATABASE
 
-// Temporary local review data. Do not connect this to MongoDB yet.
+   Database: login_content_db
+   Collection: loginData_553
+===================================================== */
+
+const loginConnection = mongoose.createConnection(
+  "mongodb://127.0.0.1:27017/login_content_db",
+  {
+    serverSelectionTimeoutMS: 5000
+  }
+);
+
+const loginConnectionPromise = loginConnection.asPromise();
+
+const userSchema = new mongoose.Schema(
+  {
+    id: {
+      type: Number,
+      required: true,
+      unique: true
+    },
+
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true
+    },
+
+    password: {
+      type: String,
+      required: true
+    },
+
+    joinedAt: {
+      type: Date,
+      default: Date.now
+    }
+  },
+  {
+    collection: "loginData_553"
+  }
+);
+
+const User = loginConnection.model("User", userSchema);
+
+/* =====================================================
+   TEMPORARY DATA
+
+   Member 3 will connect reviews later.
+   Member 4 will connect watchlist later.
+===================================================== */
+
 let reviews = [];
-
-// Temporary local watchlist data. Do not connect this to MongoDB yet.
 let watchlists = [];
 
-let nextUserId = 1;
 let nextReviewId = 1;
 let nextWatchlistId = 1;
+
+/* =====================================================
+   HELPERS
+===================================================== */
 
 function requireLogin(req, res, next) {
   if (req.session.user) {
@@ -84,62 +148,124 @@ function asyncHandler(routeHandler) {
   };
 }
 
+/* =====================================================
+   HOME
+===================================================== */
+
 app.get("/", (req, res) => {
   res.render("home");
 });
 
+/* =====================================================
+   MEMBER 2: SIGNUP
+===================================================== */
+
 app.get("/signup", (req, res) => {
-  res.render("signup", { error: null });
+  res.render("signup", {
+    error: null
+  });
 });
 
-app.post("/signup", (req, res) => {
-  const name = req.body.name.trim();
-  const email = req.body.email.trim().toLowerCase();
-  const password = req.body.password;
-  const emailAlreadyExists = users.some((user) => user.email === email);
+app.post(
+  "/signup",
+  asyncHandler(async (req, res) => {
+    const name = String(req.body.name || "").trim();
+    const email = String(req.body.email || "")
+      .trim()
+      .toLowerCase();
+    const password = String(req.body.password || "");
 
-  if (!name || !email || !password) {
-    return res.render("signup", { error: "Please fill all signup fields." });
-  }
+    if (!name || !email || !password) {
+      return res.render("signup", {
+        error: "Please fill all signup fields."
+      });
+    }
 
-  if (emailAlreadyExists) {
-    return res.render("signup", { error: "This email is already registered. Please login." });
-  }
-
-  // Temporary local user save. Do not connect this to MongoDB yet.
-  const user = {
-    id: nextUserId++,
-    name,
-    email,
-    password,
-    joinedAt: new Date()
-  };
-
-  users.push(user);
-  req.session.user = { id: user.id, name: user.name, email: user.email };
-
-  return res.redirect("/movies");
-});
-
-app.get("/login", (req, res) => {
-  res.render("login", { error: null, email: "" });
-});
-
-app.post("/login", (req, res) => {
-  const email = req.body.email.trim().toLowerCase();
-  const password = req.body.password;
-  const user = users.find((savedUser) => savedUser.email === email && savedUser.password === password);
-
-  if (!user) {
-    return res.render("login", {
-      error: "Invalid email or password.",
+    const emailAlreadyExists = await User.exists({
       email
     });
-  }
 
-  req.session.user = { id: user.id, name: user.name, email: user.email };
-  return res.redirect("/movies");
+    if (emailAlreadyExists) {
+      return res.render("signup", {
+        error: "This email is already registered. Please login."
+      });
+    }
+
+    const lastUser = await User.findOne({
+      id: { $exists: true }
+    })
+      .sort({ id: -1 })
+      .lean();
+
+    const newUserId = lastUser
+      ? Number(lastUser.id) + 1
+      : 1;
+
+    const user = await User.create({
+      id: newUserId,
+      name,
+      email,
+      password,
+      joinedAt: new Date()
+    });
+
+    req.session.user = {
+      id: user.id,
+      name: user.name,
+      email: user.email
+    };
+
+    return res.redirect("/movies");
+  })
+);
+
+/* =====================================================
+   MEMBER 2: LOGIN
+===================================================== */
+
+app.get("/login", (req, res) => {
+  res.render("login", {
+    error: null,
+    email: ""
+  });
 });
+
+app.post(
+  "/login",
+  asyncHandler(async (req, res) => {
+    const email = String(req.body.email || "")
+      .trim()
+      .toLowerCase();
+    const password = String(req.body.password || "");
+
+    if (!email || !password) {
+      return res.render("login", {
+        error: "Please enter your email and password.",
+        email
+      });
+    }
+
+    const user = await User.findOne({
+      email,
+      password
+    }).lean();
+
+    if (!user) {
+      return res.render("login", {
+        error: "Invalid email or password.",
+        email
+      });
+    }
+
+    req.session.user = {
+      id: user.id,
+      name: user.name,
+      email: user.email
+    };
+
+    return res.redirect("/movies");
+  })
+);
 
 app.get("/logout", (req, res) => {
   req.session.destroy(() => {
@@ -148,108 +274,267 @@ app.get("/logout", (req, res) => {
   });
 });
 
-app.get("/movies", requireLogin, asyncHandler(async (req, res) => {
-  const contents = await Content.find().sort({ id: 1 }).lean();
-  res.render("movies", { contents });
-}));
+/* =====================================================
+   MOVIES
+===================================================== */
 
-app.get("/movies/:id", requireLogin, asyncHandler(async (req, res) => {
-  const content = await Content.findOne({ id: Number(req.params.id) }).lean();
-  if (!content) {
-    return res.redirect("/movies");
-  }
+app.get(
+  "/movies",
+  requireLogin,
+  asyncHandler(async (req, res) => {
+    const contents = await Content.find()
+      .sort({ id: 1 })
+      .lean();
 
-  const contentReviews = reviews.filter((review) => review.contentId === content.id);
-  const isSaved = watchlists.some(
-    (item) => item.userId === req.session.user.id && item.contentId === content.id
-  );
-
-  return res.render("details", {
-    content,
-    contentReviews,
-    isSaved
-  });
-}));
-
-app.post("/movies/:id/reviews", requireLogin, asyncHandler(async (req, res) => {
-  const content = await Content.findOne({ id: Number(req.params.id) }).lean();
-  const rating = Number(req.body.rating);
-  const reviewText = req.body.reviewText.trim();
-
-  if (content && rating >= 1 && rating <= 5 && reviewText) {
-    // Temporary local review save. Do not connect this to MongoDB yet.
-    reviews.push({
-      id: nextReviewId++,
-      contentId: content.id,
-      userId: req.session.user.id,
-      userName: req.session.user.name,
-      rating,
-      reviewText,
-      createdAt: new Date()
+    res.render("movies", {
+      contents
     });
-  }
+  })
+);
 
-  return res.redirect(`/movies/${req.params.id}`);
-}));
+app.get(
+  "/movies/:id",
+  requireLogin,
+  asyncHandler(async (req, res) => {
+    const contentId = Number(req.params.id);
 
-app.post("/movies/:id/watchlist", requireLogin, asyncHandler(async (req, res) => {
-  const content = await Content.findOne({ id: Number(req.params.id) }).lean();
+    const content = await Content.findOne({
+      id: contentId
+    }).lean();
 
-  if (content) {
-    const alreadySaved = watchlists.some(
-      (item) => item.userId === req.session.user.id && item.contentId === content.id
+    if (!content) {
+      return res.redirect("/movies");
+    }
+
+    const contentReviews = reviews.filter(
+      (review) =>
+        Number(review.contentId) === contentId
     );
 
-    if (!alreadySaved) {
-      // Temporary local watchlist save. Do not connect this to MongoDB yet.
-      watchlists.push({
-        id: nextWatchlistId++,
-        userId: req.session.user.id,
+    const isSaved = watchlists.some(
+      (item) =>
+        item.userId === req.session.user.id &&
+        Number(item.contentId) === contentId
+    );
+
+    return res.render("details", {
+      content,
+      contentReviews,
+      isSaved
+    });
+  })
+);
+
+/* =====================================================
+   TEMPORARY REVIEW LOGIC
+
+   Member 3 will connect this later.
+===================================================== */
+
+app.post(
+  "/movies/:id/reviews",
+  requireLogin,
+  asyncHandler(async (req, res) => {
+    const contentId = Number(req.params.id);
+
+    const content = await Content.findOne({
+      id: contentId
+    }).lean();
+
+    const rating = Number(req.body.rating);
+    const reviewText = String(
+      req.body.reviewText || ""
+    ).trim();
+
+    if (
+      content &&
+      rating >= 1 &&
+      rating <= 5 &&
+      reviewText
+    ) {
+      reviews.push({
+        id: nextReviewId++,
         contentId: content.id,
-        title: content.title,
-        posterUrl: content.posterUrl,
-        status: "Plan to watch",
-        addedAt: new Date()
+        userId: req.session.user.id,
+        userName: req.session.user.name,
+        rating,
+        reviewText,
+        createdAt: new Date()
       });
     }
+
+    return res.redirect(`/movies/${req.params.id}`);
+  })
+);
+
+/* =====================================================
+   TEMPORARY WATCHLIST LOGIC
+
+   Member 4 will connect this later.
+===================================================== */
+
+app.post(
+  "/movies/:id/watchlist",
+  requireLogin,
+  asyncHandler(async (req, res) => {
+    const contentId = Number(req.params.id);
+
+    const content = await Content.findOne({
+      id: contentId
+    }).lean();
+
+    if (content) {
+      const alreadySaved = watchlists.some(
+        (item) =>
+          item.userId === req.session.user.id &&
+          Number(item.contentId) === contentId
+      );
+
+      if (!alreadySaved) {
+        watchlists.push({
+          id: nextWatchlistId++,
+          userId: req.session.user.id,
+          contentId: content.id,
+          title: content.title,
+          posterUrl: content.posterUrl,
+          status: "Plan to watch",
+          addedAt: new Date()
+        });
+      }
+    }
+
+    return res.redirect("/watchlist");
+  })
+);
+
+app.get(
+  "/watchlist",
+  requireLogin,
+  asyncHandler(async (req, res) => {
+    const userWatchlist = watchlists.filter(
+      (item) =>
+        item.userId === req.session.user.id
+    );
+
+    const contentIds = userWatchlist.map(
+      (item) => item.contentId
+    );
+
+    const savedContents = await Content.find({
+      id: {
+        $in: contentIds
+      }
+    }).lean();
+
+    const savedItems = userWatchlist
+      .map((item) => ({
+        ...item,
+
+        content: savedContents.find(
+          (content) =>
+            Number(content.id) ===
+            Number(item.contentId)
+        )
+      }))
+      .filter((item) => item.content);
+
+    res.render("watchlist", {
+      savedItems
+    });
+  })
+);
+
+app.post(
+  "/watchlist/remove/:id",
+  requireLogin,
+  (req, res) => {
+    watchlists = watchlists.filter(
+      (item) =>
+        !(
+          item.id === Number(req.params.id) &&
+          item.userId === req.session.user.id
+        )
+    );
+
+    res.redirect("/watchlist");
   }
+);
 
-  return res.redirect("/watchlist");
-}));
+/* =====================================================
+   DEBUG ROUTES
+===================================================== */
 
-app.get("/watchlist", requireLogin, asyncHandler(async (req, res) => {
-  const userWatchlist = watchlists.filter((item) => item.userId === req.session.user.id);
-  const contentIds = userWatchlist.map((item) => item.contentId);
-  const savedContents = await Content.find({ id: { $in: contentIds } }).lean();
+app.get(
+  "/debug/movies",
+  asyncHandler(async (req, res) => {
+    const contents = await Content.find()
+      .sort({ id: 1 })
+      .lean();
 
-  const savedItems = userWatchlist
-    .map((item) => ({
-      ...item,
-      content: savedContents.find((content) => content.id === item.contentId)
-    }))
-    .filter((item) => item.content);
+    res.json(contents);
+  })
+);
 
-  res.render("watchlist", { savedItems });
-}));
+app.get(
+  "/debug/users",
+  asyncHandler(async (req, res) => {
+    const users = await User.find()
+      .select("-password")
+      .sort({ id: 1 })
+      .lean();
 
-app.post("/watchlist/remove/:id", requireLogin, (req, res) => {
-  watchlists = watchlists.filter(
-    (item) => !(item.id === Number(req.params.id) && item.userId === req.session.user.id)
-  );
+    res.json(users);
+  })
+);
 
-  res.redirect("/watchlist");
-});
-
-app.get("/debug/movies", asyncHandler(async (req, res) => {
-  const contents = await Content.find().sort({ id: 1 }).lean();
-  res.json(contents);
-}));
+/* =====================================================
+   ERROR HANDLING
+===================================================== */
 
 app.use((error, req, res, next) => {
   console.error(error);
-  res.status(500).send("Something went wrong while reading MovieVerse data.");
+
+  if (error && error.code === 11000) {
+    return res.status(400).send(
+      "A user with this email or ID already exists."
+    );
+  }
+
+  return res
+    .status(500)
+    .send(
+      "Something went wrong while reading MovieVerse data."
+    );
 });
 
-app.listen(PORT, () => {
-  console.log(`MovieVerse is running at http://localhost:${PORT}`);
-});
+/* =====================================================
+   START SERVER ONLY AFTER BOTH DATABASES CONNECT
+===================================================== */
+
+Promise.all([
+  movieConnectionPromise,
+  loginConnectionPromise
+])
+  .then(() => {
+    console.log(
+      "Connected to MongoDB movie_content_db"
+    );
+
+    console.log(
+      "Connected to MongoDB login_content_db"
+    );
+
+    app.listen(PORT, () => {
+      console.log(
+        `MovieVerse is running at http://localhost:${PORT}`
+      );
+    });
+  })
+  .catch((error) => {
+    console.error(
+      "MongoDB startup connection error:",
+      error.message
+    );
+
+    process.exit(1);
+  });

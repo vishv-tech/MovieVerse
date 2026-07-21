@@ -1,0 +1,63 @@
+[{
+  "_id": {
+    "$oid": "6a533b1a476e96005cf5e22b"
+  },
+  "id": 1,
+  "name": "Aryan Shelar",
+  "email": "aryan@example.com",
+  "password": "aryan123",
+  "joinedAt": "2026-07-12"
+},
+{
+  "_id": {
+    "$oid": "6a533b1a476e96005cf5e22c"
+  },
+  "id": 2,
+  "name": "Vedant Nikharge",
+  "email": "vedant@example.com",
+  "password": "vedant123",
+  "joinedAt": "2026-07-12"
+},
+{
+  "_id": {
+    "$oid": "6a533b1a476e96005cf5e22d"
+  },
+  "id": 3,
+  "name": "Rahul Patil",
+  "email": "rahul@example.com",
+  "password": "rahul123",
+  "joinedAt": "2026-07-12"
+},
+{
+  "_id": {
+    "$oid": "6a533b1a476e96005cf5e22e"
+  },
+  "id": 4,
+  "name": "Gauri Parab",
+  "email": "gauri@example.com",
+  "password": "gauri123",
+  "joinedAt": "2026-07-12"
+},
+{
+  "_id": {
+    "$oid": "6a533b1a476e96005cf5e22f"
+  },
+  "id": 5,
+  "name": "Shruti Gupta",
+  "email": "shruti@example.com",
+  "password": "shruti123",
+  "joinedAt": "2026-07-12"
+},
+{
+  "_id": {
+    "$oid": "6a57ab14922838c046093a73"
+  },
+  "id": 6,
+  "name": "Vishv Lange",
+  "email": "vishv2435@gmail.com",
+  "password": "vishv456",
+  "joinedAt": {
+    "$date": "2026-07-15T15:45:24.812Z"
+  },
+  "__v": 0
+}]
