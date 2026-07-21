@@ -118,16 +118,82 @@ const userSchema = new mongoose.Schema(
 const User = loginConnection.model("User", userSchema);
 
 /* =====================================================
+   MEMBER 3: REVIEWS DATABASE
+
+   Database: reviews_content_db
+   Collection: reviews_524
+===================================================== */
+
+const reviewConnection = mongoose.createConnection(
+  "mongodb://127.0.0.1:27017/reviews_content_db",
+  {
+    serverSelectionTimeoutMS: 5000
+  }
+);
+
+const reviewConnectionPromise = reviewConnection.asPromise();
+
+const reviewSchema = new mongoose.Schema(
+  {
+    id: {
+      type: Number,
+      required: true,
+      unique: true
+    },
+
+    contentId: {
+      type: Number,
+      required: true
+    },
+
+    contentTitle: {
+      type: String,
+      required: true
+    },
+
+    userId: {
+      type: Number,
+      required: true
+    },
+
+    userName: {
+      type: String,
+      required: true
+    },
+
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5
+    },
+
+    reviewText: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  },
+  {
+    collection: "reviews_524"
+  }
+);
+
+const Review = reviewConnection.model("Review", reviewSchema);
+
+/* =====================================================
    TEMPORARY DATA
 
-   Member 3 will connect reviews later.
    Member 4 will connect watchlist later.
 ===================================================== */
 
-let reviews = [];
 let watchlists = [];
 
-let nextReviewId = 1;
 let nextWatchlistId = 1;
 
 /* =====================================================
@@ -170,9 +236,11 @@ app.post(
   "/signup",
   asyncHandler(async (req, res) => {
     const name = String(req.body.name || "").trim();
+
     const email = String(req.body.email || "")
       .trim()
       .toLowerCase();
+
     const password = String(req.body.password || "");
 
     if (!name || !email || !password) {
@@ -236,6 +304,7 @@ app.post(
     const email = String(req.body.email || "")
       .trim()
       .toLowerCase();
+
     const password = String(req.body.password || "");
 
     if (!email || !password) {
@@ -306,10 +375,13 @@ app.get(
       return res.redirect("/movies");
     }
 
-    const contentReviews = reviews.filter(
-      (review) =>
-        Number(review.contentId) === contentId
-    );
+    // Member 3:
+    // Reviews are now loaded from reviews_content_db -> reviews_524.
+    const contentReviews = await Review.find({
+      contentId: contentId
+    })
+      .sort({ createdAt: -1 })
+      .lean();
 
     const isSaved = watchlists.some(
       (item) =>
@@ -326,9 +398,10 @@ app.get(
 );
 
 /* =====================================================
-   TEMPORARY REVIEW LOGIC
+   MEMBER 3: REVIEW LOGIC
 
-   Member 3 will connect this later.
+   Reviews are now stored permanently in MongoDB:
+   reviews_content_db -> reviews_524
 ===================================================== */
 
 app.post(
@@ -342,6 +415,7 @@ app.post(
     }).lean();
 
     const rating = Number(req.body.rating);
+
     const reviewText = String(
       req.body.reviewText || ""
     ).trim();
@@ -352,9 +426,20 @@ app.post(
       rating <= 5 &&
       reviewText
     ) {
-      reviews.push({
-        id: nextReviewId++,
+      const lastReview = await Review.findOne({
+        id: { $exists: true }
+      })
+        .sort({ id: -1 })
+        .lean();
+
+      const newReviewId = lastReview
+        ? Number(lastReview.id) + 1
+        : 1;
+
+      await Review.create({
+        id: newReviewId,
         contentId: content.id,
+        contentTitle: content.title,
         userId: req.session.user.id,
         userName: req.session.user.name,
         rating,
@@ -487,6 +572,17 @@ app.get(
   })
 );
 
+app.get(
+  "/debug/reviews",
+  asyncHandler(async (req, res) => {
+    const reviews = await Review.find()
+      .sort({ id: 1 })
+      .lean();
+
+    res.json(reviews);
+  })
+);
+
 /* =====================================================
    ERROR HANDLING
 ===================================================== */
@@ -496,7 +592,7 @@ app.use((error, req, res, next) => {
 
   if (error && error.code === 11000) {
     return res.status(400).send(
-      "A user with this email or ID already exists."
+      "A record with the same ID already exists."
     );
   }
 
@@ -508,12 +604,13 @@ app.use((error, req, res, next) => {
 });
 
 /* =====================================================
-   START SERVER ONLY AFTER BOTH DATABASES CONNECT
+   START SERVER ONLY AFTER ALL 3 DATABASES CONNECT
 ===================================================== */
 
 Promise.all([
   movieConnectionPromise,
-  loginConnectionPromise
+  loginConnectionPromise,
+  reviewConnectionPromise
 ])
   .then(() => {
     console.log(
@@ -522,6 +619,10 @@ Promise.all([
 
     console.log(
       "Connected to MongoDB login_content_db"
+    );
+
+    console.log(
+      "Connected to MongoDB reviews_content_db"
     );
 
     app.listen(PORT, () => {
