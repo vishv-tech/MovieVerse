@@ -187,14 +187,40 @@ const reviewSchema = new mongoose.Schema(
 const Review = reviewConnection.model("Review", reviewSchema);
 
 /* =====================================================
-   TEMPORARY DATA
+   MEMBER 4: WATCHLIST DATABASE
 
-   Member 4 will connect watchlist later.
+   Database: watchlist_content_db
+   Collection: watchlistData_514
 ===================================================== */
 
-let watchlists = [];
+const watchlistConnection = mongoose.createConnection(
+  "mongodb://127.0.0.1:27017/watchlist_content_db",
+  {
+    serverSelectionTimeoutMS: 5000
+  }
+);
 
-let nextWatchlistId = 1;
+const watchlistConnectionPromise = watchlistConnection.asPromise();
+
+const watchlistSchema = new mongoose.Schema(
+  {
+    id: Number,
+    userId: Number,
+    contentId: Number,
+    title: String,
+    posterUrl: String,
+    status: String,
+    addedAt: Date
+  },
+  {
+    collection: "watchlistData_514"
+  }
+);
+
+const Watchlist = watchlistConnection.model(
+  "Watchlist",
+  watchlistSchema
+);
 
 /* =====================================================
    HELPERS
@@ -383,10 +409,11 @@ app.get(
       .sort({ createdAt: -1 })
       .lean();
 
-    const isSaved = watchlists.some(
-      (item) =>
-        item.userId === req.session.user.id &&
-        Number(item.contentId) === contentId
+    const isSaved = Boolean(
+      await Watchlist.exists({
+        userId: req.session.user.id,
+        contentId
+      })
     );
 
     return res.render("details", {
@@ -453,9 +480,7 @@ app.post(
 );
 
 /* =====================================================
-   TEMPORARY WATCHLIST LOGIC
-
-   Member 4 will connect this later.
+   MEMBER 4: WATCHLIST LOGIC
 ===================================================== */
 
 app.post(
@@ -469,15 +494,24 @@ app.post(
     }).lean();
 
     if (content) {
-      const alreadySaved = watchlists.some(
-        (item) =>
-          item.userId === req.session.user.id &&
-          Number(item.contentId) === contentId
-      );
+      const alreadySaved = await Watchlist.exists({
+        userId: req.session.user.id,
+        contentId
+      });
 
       if (!alreadySaved) {
-        watchlists.push({
-          id: nextWatchlistId++,
+        const lastWatchlist = await Watchlist.findOne({
+          id: { $exists: true }
+        })
+          .sort({ id: -1 })
+          .lean();
+
+        const newWatchlistId = lastWatchlist
+          ? Number(lastWatchlist.id) + 1
+          : 1;
+
+        await Watchlist.create({
+          id: newWatchlistId,
           userId: req.session.user.id,
           contentId: content.id,
           title: content.title,
@@ -496,10 +530,9 @@ app.get(
   "/watchlist",
   requireLogin,
   asyncHandler(async (req, res) => {
-    const userWatchlist = watchlists.filter(
-      (item) =>
-        item.userId === req.session.user.id
-    );
+    const userWatchlist = await Watchlist.find({
+      userId: req.session.user.id
+    }).lean();
 
     const contentIds = userWatchlist.map(
       (item) => item.contentId
@@ -532,17 +565,14 @@ app.get(
 app.post(
   "/watchlist/remove/:id",
   requireLogin,
-  (req, res) => {
-    watchlists = watchlists.filter(
-      (item) =>
-        !(
-          item.id === Number(req.params.id) &&
-          item.userId === req.session.user.id
-        )
-    );
+  asyncHandler(async (req, res) => {
+    await Watchlist.deleteOne({
+      id: Number(req.params.id),
+      userId: req.session.user.id
+    });
 
-    res.redirect("/watchlist");
-  }
+    return res.redirect("/watchlist");
+  })
 );
 
 /* =====================================================
@@ -583,6 +613,17 @@ app.get(
   })
 );
 
+app.get(
+  "/debug/watchlist",
+  asyncHandler(async (req, res) => {
+    const watchlist = await Watchlist.find()
+      .sort({ id: 1 })
+      .lean();
+
+    res.json(watchlist);
+  })
+);
+
 /* =====================================================
    ERROR HANDLING
 ===================================================== */
@@ -604,13 +645,14 @@ app.use((error, req, res, next) => {
 });
 
 /* =====================================================
-   START SERVER ONLY AFTER ALL 3 DATABASES CONNECT
+   START SERVER ONLY AFTER ALL 4 DATABASES CONNECT
 ===================================================== */
 
 Promise.all([
   movieConnectionPromise,
   loginConnectionPromise,
-  reviewConnectionPromise
+  reviewConnectionPromise,
+  watchlistConnectionPromise
 ])
   .then(() => {
     console.log(
@@ -623,6 +665,10 @@ Promise.all([
 
     console.log(
       "Connected to MongoDB reviews_content_db"
+    );
+
+    console.log(
+      "Connected to MongoDB watchlist_content_db"
     );
 
     app.listen(PORT, () => {
