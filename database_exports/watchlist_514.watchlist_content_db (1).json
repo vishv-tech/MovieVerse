@@ -1,0 +1,112 @@
+[{
+  "_id": {
+    "$oid": "6a568d1531d566e9f85230e8"
+  },
+  "id": 1,
+  "userId": 1,
+  "userName": "Aryan Shelar",
+  "contentId": 1,
+  "contentTitle": "Inception",
+  "posterUrl": "https://placehold.co/300x450?text=Inception",
+  "type": "Movie",
+  "status": "Plan to watch",
+  "addedAt": "2026-07-10"
+},
+{
+  "_id": {
+    "$oid": "6a568d1531d566e9f85230e9"
+  },
+  "id": 2,
+  "userId": 2,
+  "userName": "Aryan Shelar",
+  "contentId": 2,
+  "contentTitle": "Interstellar",
+  "posterUrl": "https://placehold.co/300x450?text=Interstellar",
+  "type": "Movie",
+  "status": "Watched",
+  "addedAt": "2026-07-10"
+},
+{
+  "_id": {
+    "$oid": "6a568d1531d566e9f85230ea"
+  },
+  "id": 3,
+  "userId": 3,
+  "userName": "Vishv Lange",
+  "contentId": 3,
+  "contentTitle": "Dark",
+  "posterUrl": "https://placehold.co/300x450?text=Dark",
+  "type": "Series",
+  "status": "Plan to watch",
+  "addedAt": "2026-07-10"
+},
+{
+  "_id": {
+    "$oid": "6a568d1531d566e9f85230eb"
+  },
+  "id": 4,
+  "userId": 4,
+  "userName": "Rohan Patil",
+  "contentId": 4,
+  "contentTitle": "Money Heist",
+  "posterUrl": "https://placehold.co/300x450?text=Money+Heist",
+  "type": "Series",
+  "status": "Favorite",
+  "addedAt": "2026-07-10"
+},
+{
+  "_id": {
+    "$oid": "6a568d1531d566e9f85230ec"
+  },
+  "id": 5,
+  "userId": 5,
+  "userName": "Gauri Chavan",
+  "contentId": 5,
+  "contentTitle": "Stranger Things",
+  "posterUrl": "https://placehold.co/300x450?text=Stranger+Things",
+  "type": "Series",
+  "status": "Watched",
+  "addedAt": "2026-07-10"
+},
+{
+  "_id": {
+    "$oid": "6a568d1531d566e9f85230ed"
+  },
+  "id": 6,
+  "userId": 6,
+  "userName": "Riya Sharma",
+  "contentId": 6,
+  "contentTitle": "Stranger Things",
+  "posterUrl": "https://placehold.co/300x450?text=Stranger+Things",
+  "type": "Series",
+  "status": "Watched",
+  "addedAt": "2026-07-10"
+},
+{
+  "_id": {
+    "$oid": "6a568d1531d566e9f85230ee"
+  },
+  "id": 7,
+  "userId": 7,
+  "userName": "Archana Kapoor",
+  "contentId": 7,
+  "contentTitle": "Money Heist",
+  "posterUrl": "https://placehold.co/300x450?text=Money+Heist",
+  "type": "Series",
+  "status": "Favorite",
+  "addedAt": "2026-07-10"
+},
+{
+  "_id": {
+    "$oid": "6a568d1531d566e9f85230ef"
+  },
+  "id": 8,
+  "userId": 8,
+  "userName": "Srushti Patel",
+  "contentId": 8,
+  "contentTitle": "Interstellar",
+  "posterUrl": "https://placehold.co/300x450?text=Interstellar",
+  "type": "Movie",
+  "status": "Watched",
+  "addedAt": "2026-07-10"
+}]
